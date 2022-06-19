@@ -1,4 +1,4 @@
-# group-assignment-1
+# Coffee Ratings EDA
 
 ## EDA proposals
 
