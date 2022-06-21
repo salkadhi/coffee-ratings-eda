@@ -1,0 +1,6 @@
+"0","coffee_ratings %>% "
+"0","  count(country_of_origin, sort=TRUE) %>% "
+"0","  top_n(12) %>% "
+"0","  select(country_of_origin) -> top12countries"
+"1","[38;5;232mSelecting by n[39m
+"

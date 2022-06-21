@@ -1,0 +1,6 @@
+"0","coffee_ratings[coffee_ratings$country_of_origin %in% top12countries[[""country_of_origin""]],] %>%"
+"0","filter(total_cup_points > 0) %>%"
+"0","mutate(country = fct_reorder(country_of_origin, total_cup_points, .fun = max)) %>%"
+"0","filter(total_cup_points > 0, altitude_mean_meters <=3500) %>%"
+"0","ggplot(aes(country, total_cup_points, color=altitude_mean_meters, )) + geom_point() + coord_flip() +   scale_color_viridis(option = ""D"")"
+"0",""
