@@ -14,6 +14,7 @@ library(reshape)
 library(reshape2)
 library(ggpmisc)
 library(viridis)
+
 coffee_ratings <- read_csv("data/coffee_ratings.csv")
 here()
 # Check missing data ####
