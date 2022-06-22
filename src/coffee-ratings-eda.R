@@ -9,6 +9,10 @@ library(gt)
 library(purrr)
 library(rstatix)
 library(Hmisc)
+library(ggforce)
+library(reshape)
+library(reshape2)
+library(ggpmisc)
 coffee_ratings <- read_csv("data/coffee_ratings.csv")
 here()
 # Check missing data ####
@@ -89,3 +93,22 @@ library(lubridate)
 # complete graph get flipped with the
 # help of coord_flip() function
 ggp +  coord_flip()
+
+
+#test facet ####
+library(tidyverse)
+
+coffee_ratings[coffee_ratings$total_cup_points>0,] %>% select(total_cup_points, grades) %>% pivot_longer(-total_cup_points, names_to = "Measures", values_to = "Score")%>%
+  ggplot(aes(x = total_cup_points, y = Score))+
+  geom_point(alpha = 0.8, size=0.1) +
+  geom_smooth(method="lm", na.rm = TRUE, se = FALSE)+
+  coord_flip() +
+  facet_wrap(vars(Measures)) +
+  ylab("Measure")+
+  xlab("Total score")+
+  stat_fit_glance(method = 'lm',
+                  method.args = list(formula = y ~ x),  geom = "text_npc", 
+                  aes(label = paste("p=", signif(..p.value.., digits = 0), 
+                                    "\nR^2=", signif(..r.squared.., digits = 2), sep = "")),
+                  label.x = "right", label.y = "bottom", size = 2)
+  

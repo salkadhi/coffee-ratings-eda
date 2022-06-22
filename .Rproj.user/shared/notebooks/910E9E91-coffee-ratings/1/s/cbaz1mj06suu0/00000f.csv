@@ -1,7 +1,0 @@
-"0","coffee_ratings %>%"
-"0","  filter(total_cup_points > 0) %>% "
-"0","  select(grades) %>%"
-"0","  gather() %>%"
-"0","  ggplot(aes(value)) +"
-"0","  facet_wrap(~ key, scales = ""free"") +"
-"0","  geom_density()"

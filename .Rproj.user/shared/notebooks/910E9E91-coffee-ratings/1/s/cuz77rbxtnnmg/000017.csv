@@ -1,7 +1,0 @@
-"0","altitudes <- c(""altitude_low_meters"",	""altitude_high_meters"",	""altitude_mean_meters"")"
-"0","coffee_ratings %>%"
-"0","  select(altitudes) %>%"
-"0","  gather(na.rm = TRUE) %>%"
-"0","  ggplot(aes(value)) +"
-"0","  facet_wrap(~ key, scales = ""free"") +"
-"0","  geom_density()"

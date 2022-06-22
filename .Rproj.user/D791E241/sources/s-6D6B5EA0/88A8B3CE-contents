@@ -1,0 +1,94 @@
+---
+title: "Stock Price Data"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
+---
+
+Bootstrapping
+
+
+```{r}
+library(pacman)
+pacman::p_load(data.table, fixest, BatchGetSymbols, finreportr, ggplot2, lubridate)
+```
+
+Download stock price data 
+
+```{r stock-price, warning = FALSE, message = FALSE}
+
+## Set parameters
+first.date <- Sys.Date() - 2500
+last.date <- Sys.Date()
+freq.data <- "monthly"
+tickers <- c("TSLA", "NIO", "PRPL", "AAPL", "SNAP", "MU", "AMD",
+             "NVDA", "TWTR")
+
+## Get Stock Prices
+
+stocks <- BatchGetSymbols(tickers = tickers, 
+                         first.date = first.date,
+                         last.date = last.date, 
+                         freq.data = freq.data,
+                         do.cache = FALSE,
+                         thresh.bad.data = 0)
+
+## Verify Returns
+stocks_DT <- stocks$df.tickers %>% setDT() %>%          # Convert to data.table
+  .[order(ticker, ref.date)]                           # Order by ticker and date
+ 
+
+## Graph Returns and Prices
+returns_plot_all <- ggplot(stocks_DT, aes(x= ref.date, y = ret.adjusted.prices, colour = ticker)) +
+  geom_line() + theme_bw() + labs(title = "", x = "Date", y= "Monthly Returns", subtitle = "") 
+
+price_plot_all <- ggplot(stocks_DT, aes(x= ref.date, y = price.close, colour = ticker)) +
+  geom_line() + theme_bw() + labs(title = "", x = "Date", y= "Closing Price", subtitle = "") 
+
+returns_sep <- ggplot(stocks_DT[ticker %in% c("AAPL", "PRPL", "SNAP", "TSLA")], aes(x = ref.date, y = ret.adjusted.prices)) + geom_line() + facet_wrap(~ticker, scales = "free_y") + theme_bw()
+prices_sep <- ggplot(stocks_DT[ticker %in% c("AAPL", "PRPL", "SNAP", "TSLA")], aes(x = ref.date, y = price.close)) + geom_line() + facet_wrap(~ticker, scales = "free_y") + theme_bw()
+
+
+## All stock tickers in SP 500
+df.SP500 <- GetSP500Stocks()
+tickers <- df.SP500$Tickers
+
+```
+
+Download Firm Level 10K Data:
+  - GetIncome(): Income
+  - GetBalanceSheet(): Balance Sheet
+  - GetCashFlow(): Cash flow
+
+```{r obtain-income}
+
+# Get Income Statement of AAPL 
+AAPL_Income <- GetIncome(symbol = c("AAPL"), year = c("2017"))
+
+# Get Income Statment of AAPL for other yearst
+years <- as.character(2015:2017)
+AAPL_Income_list <- list()
+
+for (i in 1:length(years)){
+  AAPL_Income_list [[i]] <- GetIncome(symbol = c("AAPL"), year = years[i])
+}
+
+AAPL_Income <- AAPL_Income %>%
+  setDT() %>%
+  .[, endDate := ymd(endDate)] %>%
+  .[, startDate := ymd(startDate)] %>%
+  .[Metric == "Gross Profit"]
+
+# Get Income Statments for all these years 
+stocks_DT[AAPL_Income, c("Metric", "Amount") := list(i.Metric, i.Amount),
+          on = .(ref.date >= startDate, ref.date <= endDate)]
+
+
+
+
+```
+
+
+

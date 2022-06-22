@@ -1,9 +1,0 @@
-"0","coffee_ratings %>% "
-"0","  count(country_of_origin, sort=TRUE) %>% "
-"0","  top_n(20) %>% "
-"0","  ggplot(aes(reorder(country_of_origin, n), (n)))+"
-"0","  geom_col()+"
-"0","  coord_flip()+"
-"0","  ylab(""Countries"")+xlab(""Count"")"
-"1","[38;5;232mSelecting by n[39m
-"

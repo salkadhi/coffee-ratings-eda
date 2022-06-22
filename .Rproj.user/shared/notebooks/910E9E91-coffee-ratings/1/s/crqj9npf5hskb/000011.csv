@@ -1,7 +1,0 @@
-"0","coffee_ratings %>%"
-"0","  select(altitude_mean_meters) %>%"
-"0","  filter(altitude_mean_meters<4300) %>% "
-"0","  gather(na.rm = TRUE) %>%"
-"0","  ggplot(aes(value)) +"
-"0","  facet_wrap(~ key, scales = ""free"") +"
-"0","  geom_density()"
