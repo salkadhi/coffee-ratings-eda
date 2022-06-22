@@ -9,15 +9,21 @@ output: html_document
  
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+
+```{r}
 setwd("C:/misk-DSI")
 Data <- read.csv("coffee_ratings.csv")
 e <- sum(is.na(Data)) 
 #na_av <- (e/nrow(Data))*100
 ## delete all NA value from the dataset =(132!)rows 
 #Data2 <-na.omit(Data)
-nrow(Data)
-str(Data)
-summary(Data)
+#nrow(Data)
+#str(Data)
+#summary(Data)
 # this function calculates the percentage of NA in each column
 p <- function(x){round(sum(is.na(x)/length(x)*100),digits = 2)}
 #apply the previous function to the data 
@@ -29,7 +35,6 @@ apply(Data ,2,p)
 #---------------------------------------------------------
 
 ```
-
 
 ## 3- Describe the procedures we follow to clean the data 
 
@@ -85,13 +90,12 @@ WorldMap = map_data('world')
 M = ggplot()
 M = M + geom_map(data=WorldMap, map=WorldMap,
                   aes(x=long, y=lat, group=group, map_id=region),
-                  fill="white", colour="#7f7f7f", size=0.5)
+                  fill="white",colour="#7f7f7f", size=0.5)
 M = M + geom_map(data=Data, map=WorldMap,
-                  aes(fill= total_cup_points, map_id= country_of_origin , color=total_cup_points , alpha = 0.7))
-                 #,
-                  #colour="#7f7f7f", size=0.5)
-#M = M + scale_fill_continuous(low="thistle1", high="darkred",
- #                              guide="colorbar")
+                  aes(fill= total_cup_points, map_id= country_of_origin  ))
+                 #,colour="#7f7f7f", size=0.5)
+M = M + scale_fill_continuous(low="thistle1", high="darkred",
+                               guide="colorbar")
 M = M + scale_y_continuous(breaks=c())
 M = M + scale_x_continuous(breaks=c())
 Legend=c("-----------")
@@ -106,23 +110,37 @@ M
 
 
 
-##  Study the relashinship between   processing_method and acidity 
+
+
+## Relationship Between the Acidity of Coffee and the Total Cup Points
+
 
 ```{r}
+library(ggplot2)
+
+ggplot(Data ,aes(total_cup_points ,acidity ))+
+  geom_smooth(fill="lightblue"  )
+
+
+```
 
 
 
+##  Study the relashinship between processing_method and acidity 
 
-
+```{r}
 
 ggplot(data=subset(Data , processing_method %in%c("Washed / Wet","Natural / Dry" ,"Semi-washed / Semi-pulped" ,"Pulped natural / honey")) ,aes(processing_method,acidity ))+
   geom_col(fill="lightblue"  )
 
 
 
+
+
+
 ```
 
-##  Study the relashinship between   color and acidity 
+##  Study the relashinship between color and acidity 
 
 
 ```{r}
@@ -134,43 +152,24 @@ ggplot(data=subset(Data,color %in% c("Bluish-Green" ,"Blue-Green" ,"Green")),aes
 ```
 
 
-## Study the Correlation  between  moisture and aroma
 
-
-```{r}
-# library(ggplot2) 
-# ggplot(Data ,aes(moisture,aroma))+
-#   geom_col()
-
-plot(moisture ~ aroma ,data = Data , main="Study the relashinship between  moisture and aroma" )
-cor(Data$moisture , Data$aroma , use="complete.obs") #-0.1341272
-```
-
-
-## Study the Correlation  between  moisture and acidity
-
-```{r}
-# library(ggplot2) 
-# ggplot(Data ,aes(moisture,acidity))+
-#   geom_col()
-
-plot(moisture ~ acidity ,data = Data , main="Study the relashinship between  moisture and acidity"  )
-cor(Data$moisture , Data$acidity , use="complete.obs") #-0.1290795
-```
 
 
 
 ## Study the Correlation  between  acidity and aroma 
 
 ```{r}
-# library(ggplot2) 
-# ggplot(Data ,aes(acidity , aroma))+
-#   geom_col()
+ 
 
-plot(acidity ~ aroma ,data = Data , main="Study the relashinship between acidity and aroma"  )
-cor(Data$acidity , Data$aroma , use="complete.obs") #0.7235822
+plot(acidity ~ aroma ,data = Data , main="Study the Correlation between acidity and aroma"  )
 ```
 
+##The correlation coefficient (r) between  acidity and aroma
+
+```{r}
+cor(Data$acidity , Data$aroma , use="complete.obs") #0.7235822
+
+```
 
 
 
@@ -178,17 +177,32 @@ cor(Data$acidity , Data$aroma , use="complete.obs") #0.7235822
 
 
 ```{r}
-plot(acidity ~ aroma ,data = Data , main="Study the relashinship between acidity and flavor "  )
+plot(acidity ~ flavor ,data = Data , main="Study the Correlation between acidity and flavor "  )
+
+```
+
+
+##The correlation coefficient (r) between  acidity and flavor
+
+```{r}
 cor(Data$acidity , Data$flavor , use="complete.obs") #0.8166883
 ```
 
 
 
+## Study the Correlation  between  acidity and aftertaste 
 
 
+```{r}
+plot(acidity ~ aftertaste ,data = Data , main="Study the Correlation between acidity and flavor "  )
+
+```
 
 
+## The correlation coefficient (r) between  acidity and aftertaste
 
 
-
+```{r}
+cor(Data$acidity , Data$aftertaste , use="complete.obs")
+```
 
