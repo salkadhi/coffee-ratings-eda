@@ -1,0 +1,70 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+
+```{r}
+#load libraries and dataset
+library(tidyverse)
+library(here)
+library(viridis)
+library(ggpmisc)
+library(tidytuesdayR)
+library(tidyverse)
+theme(theme_light())
+coffee_ratings <- read_csv(here("data/coffee_ratings.csv"))
+```
+```{r}
+view(coffee_ratings)
+```
+
+```{r}
+summary(coffee_ratings)
+```
+
+
+```{r}
+coffee_ratings %>% 
+  select(farm_name, total_cup_points, country_of_origin, number_of_bags, bag_weight)
+
+```
+
+```{r}
+coffee_ratings %>% 
+  count(species, sort = TRUE)
+```
+```{r}
+coffee_ratings %>% 
+  count(country_of_origin, sort = TRUE)
+```
+
+```{r}
+coffee_ratings %>% 
+  select(total_cup_points, owner, country_of_origin, aroma, number_of_bags, bag_weight)
+```
+
+```{r}
+coffee_ratings %>% 
+  ggplot(aes(total_cup_points, fill = number_of_bags)) +
+  facet_wrap(~ number_of_bags)
+  theme(legend.position = "none")
+
+coffee_ratings %>% 
+  select(total_cup_points, owner, country_of_origin, aroma, number_of_bags, bag_weight)
+
+```
+
+```{r}
+coffee_ratings %>% 
+  ggplot(aes(total_cup_points, fill = variety)) +
+  geom_histogram()+
+  facet_wrap(~ variety)+
+  theme(legend.position = "none")
+
+```
+
