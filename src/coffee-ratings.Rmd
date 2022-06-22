@@ -45,18 +45,23 @@ Check altitude distributions
 ```{r}
 altitudes <- c("altitude_low_meters",	"altitude_high_meters",	"altitude_mean_meters")
 coffee_ratings %>%
-  select(altitudes) %>%
+  select(all_of(altitudes)) %>%
   gather(na.rm = TRUE) %>%
   ggplot(aes(value)) +
   facet_wrap(~ key, scales = "free") +
   geom_density()
 ```
-Chech out the extreme values
+
+
+Check out the extreme values
+
+
 ```{r}
 sort(coffee_ratings$altitude_mean_meters, decreasing = TRUE) %>% head(10)
 ```
 
 After removing erroneous values
+
 ```{r}
 coffee_ratings %>%
   select(altitude_mean_meters) %>%
@@ -66,33 +71,52 @@ coffee_ratings %>%
   facet_wrap(~ key, scales = "free") +
   geom_density()
 ```
+
+
+
 Check distribution of grades
+
+
 ```{r}
 grades <- c("aroma",	"flavor",	"aftertaste",	"acidity",	"body",	"balance",	"uniformity",	"clean_cup",	"sweetness",	"cupper_points",	"total_cup_points")
 
 coffee_ratings %>%
-  select(grades) %>% 
+  select(all_of(grades)) %>% 
   gather() %>%
   ggplot(aes(value)) +
   facet_wrap(~ key, scales = "free") +
   geom_density()
 ```
+
+
 Check total score stats
+
+
 ```{r}
 summary(coffee_ratings$total_cup_points)
 ```
-Chech out the extreme values
+
+
+Check out the extreme values
+
+
 ```{r}
 sort(coffee_ratings$total_cup_points) %>% head(10)
 ```
+
+
 Only one zero value
+
 
 ```{r}
 coffee_ratings %>% 
   filter(total_cup_points == 0) %>% 
   select(grades)
 ```
+
+
 Received zero on all measures
+
 
 ```{r}
 coffee_ratings %>%
@@ -103,6 +127,8 @@ coffee_ratings %>%
   facet_wrap(~ key, scales = "free") +
   geom_density()
 ```
+
+
 It's easy to score high on clean cup, uniformity, and sweetness?
 "Uniformity refers to consistency of flavor of the different cups of the sample tasted."
 "Clean Cup refers to a lack of interfering negative impressions from first ingestion to final aftertaste"
@@ -110,6 +136,8 @@ It's easy to score high on clean cup, uniformity, and sweetness?
 "Acidity is often described as "brightness" when favorable or "sour" when unfavorable. At its best, acidity contributes to a coffee's liveliness, sweetness, and fresh- fruit character and is almost immediately experienced and evaluated when the coffee is first slurped into the mouth"
 
 Countries represented
+
+
 ```{r}
 coffee_ratings %>% 
   count(country_of_origin, sort=TRUE) %>% 
@@ -150,9 +178,9 @@ coffee_ratings[coffee_ratings$total_cup_points>0,] %>% select(total_cup_points, 
   xlab("Total score")+
   stat_fit_glance(method = 'lm',
                   method.args = list(formula = y ~ x),  geom = "text_npc", 
-                  aes(label = paste("p=", signif(..p.value.., digits = 0), 
-                                    "\nR^2=", signif(..r.squared.., digits = 2), sep = "")),
-                  label.x = "right", label.y = "bottom", size = 2)
+                  aes(label = paste( 
+                                    "r^2=", signif(..r.squared.., digits = 2), sep = "")),
+                  label.x = "right", label.y = "bottom", size = 3)
   
 
 ```
@@ -160,4 +188,7 @@ coffee_ratings[coffee_ratings$total_cup_points>0,] %>% select(total_cup_points, 
 # Conclusion
 
 
-Conclusion
+Flavor is the highest contributor to overall score.
+The highest scoring country (Ethiopia) has the highest altitude.
+
+
