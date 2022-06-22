@@ -19,6 +19,7 @@ library(tidyverse)
 theme(theme_light())
 coffee_ratings <- read_csv(here("data/coffee_ratings.csv"))
 ```
+                  
 ```{r}
 view(coffee_ratings)
 ```
@@ -48,6 +49,7 @@ coffee_ratings %>%
   select(total_cup_points, owner, country_of_origin, aroma, number_of_bags, bag_weight)
 ```
 
+  
 ```{r}
 coffee_ratings %>% 
   ggplot(aes(total_cup_points, fill = number_of_bags)) +
