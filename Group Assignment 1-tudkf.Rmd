@@ -1,0 +1,173 @@
+---
+title: "Group Assignment 1"
+author: "Esslam Mumen"
+date: '2022-06-22'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Introduction
+
+##In this dataset, we aim to perform EDA on the types of coffee and compare the
+##various coutries' coffee quality based on the presented total cup points
+```
+
+
+```{r}
+#Let's begin by importing some useful libraries
+
+library(tidyverse)
+library(janitor)
+library(psych)
+```
+
+```{r}
+#Importing the dataset and checking for cleanliness and missing data
+
+coffee <- read.csv("data/coffee_ratings.csv")
+
+coffee %>%
+  clean_names()
+
+make.names(names(coffee))
+
+(na_count <-sapply(coffee, function(y) sum(length(which(is.na(y))))))
+
+library(naniar)
+vis_miss(coffee)
+#Since 6.9% of the data is missing, some filling/replacing should be made throughout the EDA.
+```
+
+
+```{r}
+#Now, let's obtain a basic summary of each column in the data using the summary function.
+#For a more detailed report, we can use the 'describe' function in the "psych" package.
+
+summary(coffee)
+psych::describe(coffee)
+glimpse(coffee) #Checking for the datatype.
+```
+
+```{r}
+#Checking for the proportion of countries and plotting the frequency in a bar plot
+library(ggthemes)
+
+table1 <- table(coffee$country_of_origin)
+table2 <- prop.table(table1)
+table2
+
+(
+  country_table<-coffee %>%
+    count(country_of_origin = factor(country_of_origin)) %>% 
+    mutate(pct = prop.table(n)) %>%
+    arrange(-pct) %>% 
+    tibble()
+)
+
+ggplot(
+  country_table %>% filter(country_of_origin != "NA"),
+  mapping = aes(
+    x = reorder(country_of_origin, n),
+    y = pct,
+    group = 1,
+    label = scales::percent(pct)
+  )
+) +
+  theme_fivethirtyeight() +
+  geom_bar(stat = "identity",
+           fill = "#634832") +
+  geom_text(position = position_dodge(width = 0.9),
+
+            hjust = -0.05,
+
+            size = 2.5) +
+  labs(x = "Country of Origin",
+       y = "Proportion of Dataset") +
+  theme(axis.text.x = element_text(
+    angle = 90,
+    vjust = 0.5,
+    hjust = 1
+  )) +
+  ggtitle("Country of Origin Listed in Coffee Ratings Dataset " ) +   
+  scale_y_continuous(labels = scales::percent) +                        
+  coord_flip()
+```
+
+```{r}
+#What about the proportion of each species?
+
+tab3 <- table(coffee$species)
+tab3
+tab4 <- prop.table(tab3)
+tab4
+tab5 <- round(tab4*100, 2)
+
+# 2) Grouped bar-plot
+bp <- barplot(tab5,
+        xlab = "Species", ylab = "Percent (%)",
+        main = "% of species in the dataset",
+        col = c("lightblue","orange"), 
+        beside = TRUE,
+        ylim = c(0, 100),
+        legend = rownames(tab5))
+
+# 3) Display percentage on the bars
+text(bp, 0, tab5, pos = 3)
+
+##Therefore, it seems like Arabica species is much more popular than Robusta coffee
+
+```
+
+```{r}
+#Here, we're going to analyze and compare the coutnries of origin within the scope of total cup points.
+
+coffee_summary <- data.frame(coffee %>%
+                                          group_by(country_of_origin) %>%
+                                          summarise(avg = mean(total_cup_points),
+                                                    stdev = sd(total_cup_points),
+                                                    min = min(total_cup_points),
+                                                    max = max(total_cup_points),
+                                                    range = diff(range(total_cup_points))))
+coffee_summary
+
+#To make it more organized, let's sort this in descending order based on the "avg" column
+
+new_coffee_summary <- coffee_summary[order(-coffee_summary$avg),]
+new_coffee_summary
+#sort_values(coffee_summary$avg)
+
+max(coffee_summary$avg) #Papa New Guinea has the highest average total cup points with a score of 85.75.
+```
+
+```{r}
+#Moreover, let's make a plot determining whether acidity does in fact contribute to a higher total cup points.
+##
+##quality_acidity_summary <- data.frame(coffee %>%
+##                                          ##group_by(country_of_origin) %>%
+##                                          summarise(avg = ##mean(acidity),
+##                                                    stdev ##= sd(acidity),
+##                                                    min = min(acidity),
+#                                                    max = ##max(acidity),
+##                                                    range = diff(range(acidity))))
+##quality_acidity_summary
+##
+##
+##plot(quality_acidity_summary$country_of_origin, quality_acidity_summary$avg,
+##     main="Average Acidity for each Rating",
+##     ylab="Average Density",
+##     xlab="Quality Rating")
+```
+
+```{r}
+library(ggpubr)
+
+ggscatter(coffee, x = "total_cup_points", y = "acidity", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          main = "Correlation Between the Acidity of Coffee and the Total Cup Points", ylab = "Acidity", xlab = "Total Cup Points") #This generally shows that lower acidity yields higher points
+```
+
