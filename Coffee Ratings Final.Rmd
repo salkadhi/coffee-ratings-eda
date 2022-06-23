@@ -1,0 +1,362 @@
+---
+title: "Coffee Ratings EDA"
+author: "Esslam Mumen, Sultan Alkadhi, Asma AlQahtani, Raef Salem"
+date: '2022-06-22'
+output:
+  pdf_document: default
+  html_document: default
+---
+Raef Salem
+```{r}
+#Introduction
+
+##In this report, we aim to:
+
+###1. Introduce our data set.
+###2. Describe procedures we follow to clean the data.
+###3. Describe the attribute in the data.
+###4. Perform some exploratory data analysis
+
+##In this EDA, we have used the data set that was originally scraped from the Coffee Quality Institute (CQI) reviews page. CQI is a non-profit that offers a standardization system for grading high quality coffees to help bring them to the market. After their review process (termed coffee cupping), fresh coffee beans are assessed on ten different measures with a possible score of 0-10 for a final score of 0-100. In addition, the data set includes information about country of origin and the region’s altitudes in meters. The two types of beans (species) that go through CQI’s verification system are Arabica and Robusta.
+```
+
+```{r include=FALSE}
+#load libraries and dataset
+library(tidyverse)
+library(viridis)
+library(tidyverse)
+library(janitor)
+library(psych)
+coffee_ratings <- read_csv("data/coffee_ratings.csv")
+```
+
+Checking for cleanliness and missing data
+```{r, echo=FALSE, eval=TRUE}
+
+#coffee_ratings %>%
+#  clean_names()
+
+make.names(names(coffee_ratings))
+
+(na_count <-sapply(coffee_ratings, function(y) sum(length(which(is.na(y))))))
+
+library(naniar)
+vis_miss(coffee_ratings)
+```
+Since 6.9% of the data is missing, some filling/replacing should be made throughout the EDA.
+
+Esslam Mumen
+```{r, echo=FALSE, eval=TRUE}
+#EDA
+
+###Now, let's obtain a basic summary of each column in the data using the summary function.
+#For a more detailed report, we can use the 'describe' function in the "psych" package.
+
+summary(coffee_ratings)
+#psych::describe(coffee_ratings)
+glimpse(coffee_ratings) #Checking for the datatype.
+```
+
+Checking the stats for the total cup points
+```{r, echo=FALSE, eval=TRUE}
+summary(coffee_ratings$total_cup_points)
+```
+
+Checking for extreme values "top 10 outliers" in total cup points
+```{r, echo=FALSE, eval=TRUE}
+sort(coffee_ratings$total_cup_points) %>% head(10)
+```
+
+Checking for the proportion of coffee species
+```{r, echo=FALSE, eval=TRUE}
+
+
+tab3 <- table(coffee_ratings$species)
+tab3
+tab4 <- prop.table(tab3)
+tab4
+tab5 <- round(tab4*100, 2)
+
+# 2) Grouped bar-plot
+bp <- barplot(tab5,
+        xlab = "Species", ylab = "Percent (%)",
+        main = "% of species in the dataset",
+        col = c("lightblue","orange"), 
+        beside = TRUE,
+        ylim = c(0, 100),
+        legend = rownames(tab5))
+
+# 3) Display percentage on the bars
+text(bp, 0, tab5, pos = 3)
+
+##Therefore, it seems like Arabica species is much more popular than Robusta coffee
+```
+Therefore, it seems like Arabica species is much more popular than Robusta coffee
+
+Countries Represented
+```{r, echo=FALSE, eval=TRUE}
+coffee_ratings %>% 
+  count(country_of_origin, sort=TRUE) %>% 
+  top_n(20) %>% 
+  ggplot(aes(reorder(country_of_origin, n), (n)))+
+  geom_col()+
+  coord_flip()+
+  ylab("Countries")+xlab("Count")
+```
+
+Creating the world map.
+This is to visualize the major producers of coffee that are included in the dataset.
+```{r, echo=FALSE, eval=TRUE}
+##Creating the world map.
+##This is to visualize the major producers of coffee that are included in the dataset.
+
+library("ggplot2")
+WorldMap = map_data('world')
+#unique(WorldMap$region)
+M = ggplot()
+M = M + geom_map(data=WorldMap, map=WorldMap,
+                  aes(x=long, y=lat, group=group, map_id=region),
+                  fill="white", colour="#7f7f7f", size=0.5)
+
+M = M + geom_map(data=coffee_ratings, map=WorldMap,
+                  aes(fill= total_cup_points, map_id= country_of_origin , color=total_cup_points , alpha = 0.7))
+                 #,
+                  #colour="#7f7f7f", size=0.5)
+#M = M + scale_fill_continuous(low="thistle1", high="darkred",
+ #                              guide="colorbar")
+M = M + scale_y_continuous(breaks=c())
+M = M + scale_x_continuous(breaks=c())
+Legend=c("-----------")
+M = M + labs(fill=Legend, title="", x="", y="")
+M = M + theme_bw()
+M = M + theme(panel.border = element_blank(),
+               panel.background = element_rect(fill = '#DBFFFF'),
+              legend.background = element_blank(),
+               legend.position = c(0.05, 0.2))
+M
+##We can see here that coffee grows mainly in tropical climates
+```
+We can see here that coffee grows mainly in tropical climates
+
+Checking for extreme values
+```{r, echo=FALSE, eval=TRUE}
+##Checking for extreme values
+
+sort(coffee_ratings$altitude_mean_meters, decreasing = TRUE) %>% head(10)
+#Coffee can survive and grow in altitudes as high as 190000 feet and as low as 3800 feet.
+```
+Coffee can survive and grow in altitudes as high as 190000 feet and as low as 3800 feet.
+
+
+Here, we're going to analyze and compare the countries of origin within the scope of total cup points.
+
+To make it more organized, let's sort this in descending order based on the "avg" column
+
+
+```{r, echo=FALSE, eval=TRUE}
+#Here, we're going to analyze and compare the countries of origin within the scope of total cup points.
+
+coffee_summary <- data.frame(coffee_ratings %>%
+                                          group_by(country_of_origin) %>%
+                                          summarise(avg = mean(total_cup_points),
+                                                    stdev = sd(total_cup_points),
+                                                    min = min(total_cup_points),
+                                                    max = max(total_cup_points),
+                                                    range = diff(range(total_cup_points))))
+
+#To make it more organized, let's sort this in descending order based on the "avg" column
+
+new_coffee_summary <- coffee_summary[order(-coffee_summary$avg),]
+new_coffee_summary
+#sort_values(coffee_summary$avg)
+
+max(coffee_summary$avg) #Papa New Guinea has the highest average total cup points with a score of 85.75.
+```
+#Papa New Guinea has the highest average total cup points with a score of 85.75.
+
+
+
+
+Sultan Alkadhi
+Checking for altitude distributions
+
+
+```{r, echo=FALSE, eval=TRUE}
+##Checking for altitude distributions
+
+altitudes <- c("altitude_low_meters",   "altitude_high_meters", "altitude_mean_meters")
+coffee_ratings %>%
+  select(all_of(altitudes)) %>%
+  gather(na.rm = TRUE) %>%
+  ggplot(aes(value)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_density()
+```
+
+
+
+
+After removing erroneous values
+
+
+
+```{r, echo=FALSE, eval=TRUE}
+##After removing erroneous values
+
+coffee_ratings %>%
+  select(altitude_mean_meters) %>%
+  filter(altitude_mean_meters<4300) %>% 
+  gather(na.rm = TRUE) %>%
+  ggplot(aes(value)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_density()
+```
+
+
+
+
+
+
+
+
+Checking the distribution of grades
+```{r, echo=FALSE, eval=TRUE}
+##Checking the distribution of grades
+
+grades <- c("aroma",    "flavor",   "aftertaste",   "acidity",  "body", "balance",  "uniformity",   "clean_cup",    "sweetness",    "cupper_points",    "total_cup_points")
+
+coffee_ratings %>%
+  filter(total_cup_points > 0) %>% 
+  select(grades) %>%
+  gather() %>%
+  ggplot(aes(value)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_density()
+
+##It’s easy to score high on clean cup, uniformity, and sweetness? “Uniformity refers to consistency of flavor of the different cups of the sample tasted.” “Clean Cup refers to a lack of interfering negative impressions from first ingestion to final aftertaste” “Sweetness” no longer part of the CQI scale? “Acidity is often described as”brightness” when favorable or “sour” when unfavorable. At its best, acidity contributes to a coffee’s liveliness, sweetness, and fresh- fruit character and is almost immediately experienced and evaluated when the coffee is first slurped into the mouth”
+```
+It’s easy to score high on clean cup, uniformity, and sweetness? “Uniformity refers to consistency of flavor of the different cups of the sample tasted.” “Clean Cup refers to a lack of interfering negative impressions from first ingestion to final aftertaste” “Sweetness” no longer part of the CQI scale? “Acidity is often described as”brightness” when favorable or “sour” when unfavorable. At its best, acidity contributes to a coffee’s liveliness, sweetness, and fresh- fruit character and is almost immediately experienced and evaluated when the coffee is first slurped into the mouth”
+
+
+```{r, echo=FALSE, eval=TRUE}
+coffee_ratings %>% 
+  count(country_of_origin, sort=TRUE) %>% 
+  top_n(12) %>% 
+  select(country_of_origin) -> top12countries
+```
+Order countries by rating and highlight altitude
+
+
+
+```{r, echo=FALSE, eval=TRUE}
+#Order countries by rating and highlight altitude
+coffee_ratings[coffee_ratings$country_of_origin %in% top12countries[["country_of_origin"]],] %>%
+filter(total_cup_points > 0) %>%
+mutate(country = fct_reorder(country_of_origin, total_cup_points, .fun = max)) %>%
+filter(total_cup_points > 0, altitude_mean_meters <=3500) %>%
+ggplot(aes(country, total_cup_points, color=altitude_mean_meters, )) + geom_point() + coord_flip() +scale_color_viridis(option = "D") +
+  labs(x="Country", y="Average Rating", color="Mean altitude")
+```
+
+
+
+
+Model total score vs different grades
+```{r, echo=FALSE, eval=TRUE}
+#coffee_ratings[coffee_ratings$total_cup_points>0,] %>% select(total_cup_points, grades) %>% pivot_longer(-total_cup_points, names_to = "Measures", values_to = "Score")%>%
+#  ggplot(aes(x = total_cup_points, y = Score))+
+#  geom_point(alpha = 0.8, size=0.1) +
+#  geom_smooth(method="lm", na.rm = TRUE, se = #FALSE)+
+#  coord_flip() +
+#  facet_wrap(vars(Measures)) +
+#  ylab("Measure")+
+#  xlab("Total score")+
+#  stat_fit_glance(method = 'lm',
+#                  method.args = list(formula = y ~ #                   x),  geom = "text_npc", 
+#                  aes(label = paste( 
+#                                    "r^2=", #signif(..r.squared.., digits = 2), sep = "")),
+#                  label.x = "right", label.y = #"bottom", size = 3)
+```
+
+
+
+
+
+
+Asma AlQahtani
+
+
+
+
+```{r, echo=FALSE, eval=TRUE}
+ggplot(data=subset(coffee_ratings , processing_method %in%c("Washed / Wet","Natural / Dry" ,"Semi-washed / Semi-pulped" ,"Pulped natural / honey")) ,aes(processing_method,acidity ))+
+  geom_col(fill="lightblue"  )
+```
+
+```{r, echo=FALSE, eval=TRUE}
+#The relationship between color and acidity
+library(ggplot2) 
+ggplot(data=subset(coffee_ratings,color %in% c("Bluish-Green" ,"Blue-Green" ,"Green")),aes(color,acidity))+
+  geom_col( fill="lightblue")
+```
+
+```{r, echo=FALSE, eval=TRUE}
+#The correlation between moisture and aroma
+# library(ggplot2) 
+# ggplot(Data ,aes(moisture,aroma))+
+#   geom_col()
+
+plot(moisture ~ aroma ,data = coffee_ratings , main="The relationship Between Moisture and Aroma" )
+cor(coffee_ratings$moisture , coffee_ratings$aroma , use="complete.obs") #-0.1341272
+```
+
+```{r, echo=FALSE, eval=TRUE}
+#The correlation between moisture and acidity
+# library(ggplot2) 
+# ggplot(Data ,aes(moisture,acidity))+
+#   geom_col()
+
+plot(moisture ~ acidity ,data = coffee_ratings , main="The relationship between  moisture and acidity"  )
+cor(coffee_ratings$moisture , coffee_ratings$acidity , use="complete.obs") #-0.1290795
+```
+
+```{r, echo=FALSE, eval=TRUE}
+#The correlation between acidity and aroma
+# library(ggplot2) 
+# ggplot(Data ,aes(acidity , aroma))+
+#   geom_col()
+
+plot(acidity ~ aroma ,data = coffee_ratings , main="The relationship between acidity and aroma")
+cor(coffee_ratings$acidity , coffee_ratings$aroma , use="complete.obs") #0.7235822
+```
+
+```{r, echo=FALSE, eval=TRUE}
+#The correlation between acidity and flavor
+plot(acidity ~ aroma ,data = coffee_ratings, main="The correlation between acidity and flavor ")
+cor(coffee_ratings$acidity , coffee_ratings$flavor , use="complete.obs") #0.8166883
+```
+
+
+
+
+Raef Salem
+```{r}
+#Conclusion
+
+##So far, we have discovered that:
+
+###1. Coffee is mainly grown in tropical regions
+###2. Mexico contains the highest amount of data in the data set with more than 236 coffee cups.
+###3. The highest score given to a cup of coffee is 90.58, and the lowest is 0.
+###4. Arabica is a more popular species than Robusta, with its coffee samples taking over 98% of the data set.
+###5. Coffee can grow in extremely high altitudes.
+###6. Papa New Guinea has the highest average total cup points with a score of 85.75.
+###Flavor is the highest contributor to the overall score.
+###The highest scoring country (Ethiopia) has the highest altitude.
+```
+
+```{r}
+#Thank You!
+
+##Q&A
+```
