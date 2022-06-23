@@ -3,22 +3,22 @@ title: "Coffee Ratings EDA"
 author: "Esslam Mumen, Sultan Alkadhi, Asma AlQahtani, Raef Salem"
 date: '2022-06-22'
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 Raef Salem
-```{r}
-#Introduction
 
-##In this report, we aim to:
+Introduction
 
-###1. Introduce our data set.
-###2. Describe procedures we follow to clean the data.
-###3. Describe the attribute in the data.
-###4. Perform some exploratory data analysis
+In this report, we aim to:
 
-##In this EDA, we have used the data set that was originally scraped from the Coffee Quality Institute (CQI) reviews page. CQI is a non-profit that offers a standardization system for grading high quality coffees to help bring them to the market. After their review process (termed coffee cupping), fresh coffee beans are assessed on ten different measures with a possible score of 0-10 for a final score of 0-100. In addition, the data set includes information about country of origin and the region’s altitudes in meters. The two types of beans (species) that go through CQI’s verification system are Arabica and Robusta.
-```
+1. Introduce our data set.
+2. Describe procedures we follow to clean the data.
+3. Describe the attribute in the data.
+4. Perform some exploratory data analysis
+
+In this EDA, we have used the data set that was originally scraped from the Coffee Quality Institute (CQI) reviews page. CQI is a non-profit that offers a standardization system for grading high quality coffees to help bring them to the market. After their review process (termed coffee cupping), fresh coffee beans are assessed on ten different measures with a possible score of 0-10 for a final score of 0-100. In addition, the data set includes information about country of origin and the region’s altitudes in meters. The two types of beans (species) that go through CQI’s verification system are Arabica and Robusta.
+
 
 ```{r include=FALSE}
 #load libraries and dataset
@@ -27,6 +27,7 @@ library(viridis)
 library(tidyverse)
 library(janitor)
 library(psych)
+library(ggpmisc)
 coffee_ratings <- read_csv("data/coffee_ratings.csv")
 ```
 
@@ -180,7 +181,6 @@ max(coffee_summary$avg) #Papa New Guinea has the highest average total cup point
 Sultan Alkadhi
 Checking for altitude distributions
 
-
 ```{r, echo=FALSE, eval=TRUE}
 ##Checking for altitude distributions
 
@@ -195,9 +195,7 @@ coffee_ratings %>%
 
 
 
-
 After removing erroneous values
-
 
 
 ```{r, echo=FALSE, eval=TRUE}
@@ -263,19 +261,19 @@ ggplot(aes(country, total_cup_points, color=altitude_mean_meters, )) + geom_poin
 
 Model total score vs different grades
 ```{r, echo=FALSE, eval=TRUE}
-#coffee_ratings[coffee_ratings$total_cup_points>0,] %>% select(total_cup_points, grades) %>% pivot_longer(-total_cup_points, names_to = "Measures", values_to = "Score")%>%
-#  ggplot(aes(x = total_cup_points, y = Score))+
-#  geom_point(alpha = 0.8, size=0.1) +
-#  geom_smooth(method="lm", na.rm = TRUE, se = #FALSE)+
-#  coord_flip() +
-#  facet_wrap(vars(Measures)) +
-#  ylab("Measure")+
-#  xlab("Total score")+
-#  stat_fit_glance(method = 'lm',
-#                  method.args = list(formula = y ~ #                   x),  geom = "text_npc", 
-#                  aes(label = paste( 
-#                                    "r^2=", #signif(..r.squared.., digits = 2), sep = "")),
-#                  label.x = "right", label.y = #"bottom", size = 3)
+coffee_ratings[coffee_ratings$total_cup_points>0,] %>% select(total_cup_points, grades) %>% pivot_longer(-total_cup_points, names_to = "Measures", values_to = "Score")%>%
+  ggplot(aes(x = total_cup_points, y = Score))+
+  geom_point(alpha = 0.8, size=0.1) +
+  geom_smooth(method="lm", na.rm = TRUE, se = FALSE)+
+  coord_flip() +
+  facet_wrap(vars(Measures)) +
+  ylab("Measure")+
+  xlab("Total score")+
+  stat_fit_glance(method = 'lm',
+                  method.args = list(formula = y ~                   x),  geom = "text_npc", 
+                  aes(label = paste( 
+                                    "r^2=", signif(..r.squared.., digits = 2), sep = "")),
+                  label.x = "right", label.y = "bottom", size = 3)
 ```
 
 
@@ -285,14 +283,21 @@ Model total score vs different grades
 
 Asma AlQahtani
 
+Relationship Between the Acidity of Coffee and the Total Cup Points
+```{r, echo=FALSE, eval=TRUE}
+library(ggplot2)
 
+ggplot(coffee_ratings ,aes(total_cup_points ,acidity ))+
+  geom_smooth(fill="lightblue"  )
+```
 
-
+The relationship between processing method and acidity
 ```{r, echo=FALSE, eval=TRUE}
 ggplot(data=subset(coffee_ratings , processing_method %in%c("Washed / Wet","Natural / Dry" ,"Semi-washed / Semi-pulped" ,"Pulped natural / honey")) ,aes(processing_method,acidity ))+
   geom_col(fill="lightblue"  )
 ```
 
+The relationship between color and acidity
 ```{r, echo=FALSE, eval=TRUE}
 #The relationship between color and acidity
 library(ggplot2) 
@@ -300,26 +305,7 @@ ggplot(data=subset(coffee_ratings,color %in% c("Bluish-Green" ,"Blue-Green" ,"Gr
   geom_col( fill="lightblue")
 ```
 
-```{r, echo=FALSE, eval=TRUE}
-#The correlation between moisture and aroma
-# library(ggplot2) 
-# ggplot(Data ,aes(moisture,aroma))+
-#   geom_col()
-
-plot(moisture ~ aroma ,data = coffee_ratings , main="The relationship Between Moisture and Aroma" )
-cor(coffee_ratings$moisture , coffee_ratings$aroma , use="complete.obs") #-0.1341272
-```
-
-```{r, echo=FALSE, eval=TRUE}
-#The correlation between moisture and acidity
-# library(ggplot2) 
-# ggplot(Data ,aes(moisture,acidity))+
-#   geom_col()
-
-plot(moisture ~ acidity ,data = coffee_ratings , main="The relationship between  moisture and acidity"  )
-cor(coffee_ratings$moisture , coffee_ratings$acidity , use="complete.obs") #-0.1290795
-```
-
+The correlation between acidity and aroma
 ```{r, echo=FALSE, eval=TRUE}
 #The correlation between acidity and aroma
 # library(ggplot2) 
@@ -330,33 +316,35 @@ plot(acidity ~ aroma ,data = coffee_ratings , main="The relationship between aci
 cor(coffee_ratings$acidity , coffee_ratings$aroma , use="complete.obs") #0.7235822
 ```
 
+The correlation between acidity and flavor
 ```{r, echo=FALSE, eval=TRUE}
 #The correlation between acidity and flavor
 plot(acidity ~ aroma ,data = coffee_ratings, main="The correlation between acidity and flavor ")
 cor(coffee_ratings$acidity , coffee_ratings$flavor , use="complete.obs") #0.8166883
 ```
 
-
+The correlation between acidity and aftertaste
+```{r}
+plot(acidity ~ aftertaste ,data = coffee_ratings , main="The Correlation between acidity and after taste "  )
+```
 
 
 Raef Salem
-```{r}
-#Conclusion
 
-##So far, we have discovered that:
+Conclusion
 
-###1. Coffee is mainly grown in tropical regions
-###2. Mexico contains the highest amount of data in the data set with more than 236 coffee cups.
-###3. The highest score given to a cup of coffee is 90.58, and the lowest is 0.
-###4. Arabica is a more popular species than Robusta, with its coffee samples taking over 98% of the data set.
-###5. Coffee can grow in extremely high altitudes.
-###6. Papa New Guinea has the highest average total cup points with a score of 85.75.
-###Flavor is the highest contributor to the overall score.
-###The highest scoring country (Ethiopia) has the highest altitude.
-```
+So far, we have discovered that:
 
-```{r}
-#Thank You!
+1. Coffee is mainly grown in tropical regions
+2. Mexico contains the highest amount of data in the data set with more than 236 coffee cups.
+3. The highest score given to a cup of coffee is 90.58, and the lowest is 0.
+4. Arabica is a more popular species than Robusta, with its coffee samples taking over 98% of the data set.
+5. Coffee can grow in extremely high altitudes.
+6. Papa New Guinea has the highest average total cup points with a score of 85.75.
+Flavor is the highest contributor to the overall score.
+The highest scoring country (Ethiopia) has the highest altitude.
 
-##Q&A
-```
+
+Thank You!
+
+Q&A
