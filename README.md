@@ -6,4 +6,4 @@ After their review process (termed coffee cupping), fresh coffee beans are asses
 
 - [R Markdown HTML Document](./Coffee-Ratings-Final.html)
 
-check out [here](https://salkadhi.github.io/coffee-ratings-eda/)
+check out [here](https://misk-dsi.github.io/coffee-ratings-eda/)
